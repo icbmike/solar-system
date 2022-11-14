@@ -9,7 +9,7 @@ export interface Camera {
 export const initCamera = (): Camera => {
   return {
     lookAt: [0, 0, 0],
-    position: [0, 0, -6],
+    position: [0, 0, -10],
     up: [0, 1, 0],
   };
 };
