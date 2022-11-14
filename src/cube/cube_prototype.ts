@@ -1,7 +1,7 @@
 import { mat4 } from "gl-matrix";
-import { ProgramInfo } from "./ProgramInfo";
+import { ProgramInfo } from "../ProgramInfo";
 
-const positions = [
+const vertices = [
   // Front face
   -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0, 1.0, -1.0, 1.0, 1.0,
 
@@ -58,7 +58,7 @@ export const initBuffers = (gl: WebGL2RenderingContext): CubeBuffers => {
   // shape. We do this by creating a Float32Array from the
   // JavaScript array, then use it to fill the current buffer.
 
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 
   // Now set up the colors for the vertices
 
@@ -72,7 +72,6 @@ export const initBuffers = (gl: WebGL2RenderingContext): CubeBuffers => {
   // This array defines each face as two triangles, using the
   // indices into the vertex array to specify each triangle's
   // position.
-
   const indices = [
     0,
     1,

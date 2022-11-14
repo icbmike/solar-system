@@ -5,9 +5,11 @@ import fragmentShader from "./fragment_shader.glsl";
 import { ProgramInfo } from "./ProgramInfo";
 import { Camera, initCamera } from "./camera";
 import { initShaderProgram } from "./shader";
-import { CubeBuffers, drawCube, initBuffers } from "./cube";
+import { CubeBuffers, drawCube, initBuffers } from "./cube/cube_prototype";
+import { Cube } from "./cube/Cube";
 
-var cubeRotation = 0.0;
+const cube1 = new Cube([-2, 1, 0], [0, 1, 0], 0);
+const cube2 = new Cube([2, -1, 1], [0, 1, 1], 0);
 
 main();
 
@@ -112,19 +114,36 @@ function drawScene(
   const viewMatrix = mat4.create();
   mat4.lookAt(viewMatrix, camera.position, camera.lookAt, camera.up);
 
-  const modelMatrix = mat4.create();
+
+  let modelMatrix = mat4.create();
+  mat4.translate(modelMatrix, modelMatrix, cube1.position);
 
   mat4.rotate(
     modelMatrix, // destination matrix
     modelMatrix, // matrix to rotate
-    cubeRotation * 2, // amount to rotate in radians
-    [1, 1, 0] // axis to rotate around
+    cube1.rotationAngle * 2, // amount to rotate in radians
+    cube1.rotationAxis // axis to rotate around
   );
+
+
+  drawCube(gl, buffers, programInfo, projectionMatrix, viewMatrix, modelMatrix);
+
+  modelMatrix = mat4.create();
+  mat4.translate(modelMatrix, modelMatrix, cube2.position);
+
+  mat4.rotate(
+    modelMatrix, // destination matrix
+    modelMatrix, // matrix to rotate
+    cube2.rotationAngle * 2, // amount to rotate in radians
+    cube2.rotationAxis // axis to rotate around
+  );
+
 
   drawCube(gl, buffers, programInfo, projectionMatrix, viewMatrix, modelMatrix);
 }
 
 function update(deltaTime: number) {
   // Update the rotation for the next draw
-  cubeRotation += deltaTime;
+  cube1.update(deltaTime);
+  cube2.update(deltaTime);
 }
