@@ -3,6 +3,8 @@ import { mat4 } from "gl-matrix";
 import vertexShader from "./vertex_shader.glsl";
 import fragmentShader from "./fragment_shader.glsl";
 import { ProgramInfo } from "./ProgramInfo";
+import { Camera, initCamera } from "./camera";
+import { loadShader } from "./shader";
 
 var squareRotation = 0.0;
 
@@ -43,13 +45,15 @@ function main() {
         shaderProgram,
         "uProjectionMatrix"
       ),
-      modelViewMatrix: gl.getUniformLocation(shaderProgram, "uModelViewMatrix"),
+      modelMatrix: gl.getUniformLocation(shaderProgram, "uModelMatrix"),
+      viewMatrix: gl.getUniformLocation(shaderProgram, "uViewMatrix"),
     },
   };
 
   // Here's where we call the routine that builds all the
   // objects we'll be drawing.
   const buffers = initBuffers(gl);
+  const camera = initCamera();
 
   var then = 0;
 
@@ -59,7 +63,7 @@ function main() {
     const deltaTime = now - then;
     then = now;
 
-    drawScene(gl, programInfo, buffers, deltaTime);
+    drawScene(gl, programInfo, buffers, camera, deltaTime);
 
     requestAnimationFrame(render);
   }
@@ -136,6 +140,7 @@ function drawScene(
     position: WebGLBuffer;
     color: WebGLBuffer;
   },
+  camera: Camera,
   deltaTime: number
 ) {
   gl.clearColor(0.0, 0.0, 0.0, 1.0); // Clear to black, fully opaque
@@ -166,19 +171,14 @@ function drawScene(
 
   // Set the drawing position to the "identity" point, which is
   // the center of the scene.
-  const modelViewMatrix = mat4.create();
+  const viewMatrix = mat4.create();
+  mat4.lookAt(viewMatrix, camera.position, camera.lookAt, camera.up);
 
-  // Now move the drawing position a bit to where we want to
-  // start drawing the square.
+  const modelMatrix = mat4.create();
 
-  mat4.translate(
-    modelViewMatrix, // destination matrix
-    modelViewMatrix, // matrix to translate
-    [-0.0, 0.0, -6.0]
-  ); // amount to translate
   mat4.rotate(
-    modelViewMatrix, // destination matrix
-    modelViewMatrix, // matrix to rotate
+    modelMatrix, // destination matrix
+    modelMatrix, // matrix to rotate
     squareRotation, // amount to rotate in radians
     [0, 0, 1]
   ); // axis to rotate around
@@ -224,20 +224,23 @@ function drawScene(
   }
 
   // Tell WebGL to use our program when drawing
-
   gl.useProgram(programInfo.program);
 
   // Set the shader uniforms
-
   gl.uniformMatrix4fv(
     programInfo.uniformLocations.projectionMatrix,
     false,
     projectionMatrix
   );
   gl.uniformMatrix4fv(
-    programInfo.uniformLocations.modelViewMatrix,
+    programInfo.uniformLocations.viewMatrix,
     false,
-    modelViewMatrix
+    viewMatrix
+  );
+  gl.uniformMatrix4fv(
+    programInfo.uniformLocations.modelMatrix,
+    false,
+    modelMatrix
   );
 
   {
@@ -247,7 +250,6 @@ function drawScene(
   }
 
   // Update the rotation for the next draw
-
   squareRotation += deltaTime;
 }
 
@@ -263,7 +265,6 @@ function initShaderProgram(
   const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
 
   // Create the shader program
-
   const shaderProgram = gl.createProgram();
   gl.attachShader(shaderProgram, vertexShader);
   gl.attachShader(shaderProgram, fragmentShader);
@@ -280,32 +281,4 @@ function initShaderProgram(
   }
 
   return shaderProgram;
-}
-
-//
-// creates a shader of the given type, uploads the source and
-// compiles it.
-//
-function loadShader(gl: WebGL2RenderingContext, type: GLenum, source: string) {
-  const shader = gl.createShader(type);
-
-  // Send the source to the shader object
-
-  gl.shaderSource(shader, source);
-
-  // Compile the shader program
-
-  gl.compileShader(shader);
-
-  // See if it compiled successfully
-
-  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-    alert(
-      "An error occurred compiling the shaders: " + gl.getShaderInfoLog(shader)
-    );
-    gl.deleteShader(shader);
-    return null;
-  }
-
-  return shader;
 }

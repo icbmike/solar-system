@@ -3,6 +3,7 @@ export interface ProgramInfo {
   attributeLocations: { vertexPosition: number; vertexColor: number };
   uniformLocations: {
     projectionMatrix: WebGLUniformLocation;
-    modelViewMatrix: WebGLUniformLocation;
+    modelMatrix: WebGLUniformLocation;
+    viewMatrix: WebGLUniformLocation;
   };
 }
