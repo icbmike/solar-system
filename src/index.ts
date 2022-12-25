@@ -74,9 +74,6 @@ function main() {
   requestAnimationFrame(render);
 }
 
-//
-// Draw the scene.
-//
 function drawScene(
   gl: WebGL2RenderingContext,
   programInfo: ProgramInfo,
@@ -125,11 +122,12 @@ function drawScene(
     cube1.rotationAxis // axis to rotate around
   );
 
-
   drawCube(gl, buffers, programInfo, projectionMatrix, viewMatrix, modelMatrix);
 
   modelMatrix = mat4.create();
+
   mat4.translate(modelMatrix, modelMatrix, cube2.position);
+  mat4.scale(modelMatrix, modelMatrix, [0.5, 0.5, 0.5]);
 
   mat4.rotate(
     modelMatrix, // destination matrix
@@ -137,7 +135,6 @@ function drawScene(
     cube2.rotationAngle * 2, // amount to rotate in radians
     cube2.rotationAxis // axis to rotate around
   );
-
 
   drawCube(gl, buffers, programInfo, projectionMatrix, viewMatrix, modelMatrix);
 }
